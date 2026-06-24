@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kronosta.SS2Renderer", "Kronosta.SS2Renderer\Kronosta.SS2Renderer.csproj", "{DDD07E04-46DA-47F5-ADFC-D66F5D612E96}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DDD07E04-46DA-47F5-ADFC-D66F5D612E96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDD07E04-46DA-47F5-ADFC-D66F5D612E96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDD07E04-46DA-47F5-ADFC-D66F5D612E96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDD07E04-46DA-47F5-ADFC-D66F5D612E96}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Kronosta.SS2Renderer": {
+      "commandName": "Project",
+      "commandLineArgs": "line \"C:\\Users\\caetu\\OneDrive\\Documents\\Ableton\\SS^2 (stereo).wav\" 0.0,0.0,1.0,1.0 \"C:\\Users\\caetu\\OneDrive\\Documents\\Ableton\\SS^2 main diagonal.wav\""
+    }
+  }
+}
