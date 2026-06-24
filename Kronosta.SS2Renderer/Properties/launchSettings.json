@@ -2,7 +2,7 @@
   "profiles": {
     "Kronosta.SS2Renderer": {
       "commandName": "Project",
-      "commandLineArgs": "line \"C:\\Users\\caetu\\OneDrive\\Documents\\Ableton\\SS^2 (stereo).wav\" 0.0,0.0,1.0,1.0 \"C:\\Users\\caetu\\OneDrive\\Documents\\Ableton\\SS^2 main diagonal.wav\""
+      "commandLineArgs": "chunkparams 16,16,0.3 experience \"Arctakkurus.wav\" \"Arctakkurus-experience.wav\""
     }
   }
 }

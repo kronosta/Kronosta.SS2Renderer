@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using NAudio;
 using NAudio.Wave;
 
@@ -84,7 +85,7 @@ namespace Kronosta.SS2Renderer
             }
         }
 
-        private int ConvertToSampleTime(double time) => (int)(time * sampleRate);
+        private int ConvertToSampleTime(double time) => (int)((time + 0.0000000001) * sampleRate); // get past some amount of floating point error
         private short ConvertToSampleAmplitude(double amp) => (short)(amp * 65536);
 
 
@@ -135,9 +136,105 @@ namespace Kronosta.SS2Renderer
             return samples;
         }
 
+        public short[] CreateVertical()
+        {
+            double lenx = chunkLen * chunksX;
+            double leny = chunkLen * chunksY;
+            List<short[]> lines = new List<short[]>();
+
+            // Vertical playback
+            for (double i = 0; i < lenx; i += chunkLen)
+                lines.Add(CreateLine(i, 0.0, i, leny));
+
+            // Join all samples together
+            return lines.Aggregate((arr1, arr2) => arr1.Concat(arr2).ToArray());
+        }
+
+        public short[] CreateExperience()
+        {
+            double lenx = chunkLen * chunksX;
+            double leny = chunkLen * chunksY;
+            List<short[]> lines = new List<short[]>();
+
+            // Horizontal playback
+            for (double i = 0; i < leny; i += chunkLen)
+                lines.Add(CreateLine(0.0, i, lenx, i));
+
+            // Vertical playback
+            for (double i = 0; i < lenx; i += chunkLen)
+                lines.Add(CreateLine(i, 0.0, i, leny));
+
+            // Main diagonal
+            lines.Add(CreateLine(0.0, 0.0, lenx, lenx));
+
+            // Snaking across the timeplane
+            // Left and bottom edge
+            double xEdgeCounter = chunkLen;
+            double yEdgeScale = leny / lenx; // Handle rectangles
+            while (xEdgeCounter <= lenx)
+            {
+                /*
+                For a 3x3 second clip with 1 second chunks:
+                0.0, 0.0, 1.0, 0.0
+                1.0, 0.0, 0.0, 1.0
+                0.0, 1.0, 2.0, 0.0
+                2.0, 0.0, 0.0, 2.0
+                0.0, 2.0, 3.0, 0.0
+                3.0, 0.0, 0.0, 3.0
+
+                */
+                lines.Add(CreateLine(0.0, (xEdgeCounter - chunkLen) * yEdgeScale, xEdgeCounter, 0.0));
+                lines.Add(CreateLine(xEdgeCounter, 0.0, 0.0, xEdgeCounter * yEdgeScale));
+                xEdgeCounter += chunkLen;
+            }
+            // Right and top edge
+            double yEdgeCounter = chunkLen;
+            double xEdgeScale = lenx / leny; // Handle rectangles
+            while (yEdgeCounter <= leny)
+            {
+                /*
+                For a 3x3 second clip with 1 second chunks:
+                0.0, 3.0, 3.0, 1.0
+                3.0, 1.0, 1.0, 3.0
+                1.0, 3.0, 3.0, 2.0
+                3.0, 2.0, 2.0, 3.0
+                2.0, 3.0, 3.0, 3.0
+                3.0, 3.0, 3.0, 3.0 (will produce a zero-length sample array without error)
+
+                */
+                lines.Add(CreateLine((yEdgeCounter - chunkLen) * xEdgeScale, leny, lenx, yEdgeCounter));
+                lines.Add(CreateLine(lenx, yEdgeCounter, yEdgeCounter * xEdgeScale, leny));
+                yEdgeCounter += chunkLen;
+            }
+
+            // Join all samples together
+            return lines.Aggregate((arr1, arr2) => arr1.Concat(arr2).ToArray());
+        }
+
+        public short[] CreateRandom(int iterations)
+        {
+            double lenx = chunkLen * chunksX;
+            double leny = chunkLen * chunksY;
+            var random = new Random((int)DateTime.Now.Ticks);
+            List<short[]> lines = new List<short[]>();
+
+            double xprev = random.NextDouble() * lenx;
+            double yprev = random.NextDouble() * leny;
+            for (int i = 0; i < iterations; i++)
+            {
+                double x = random.NextDouble() * lenx;
+                double y = random.NextDouble() * leny;
+                lines.Add(CreateLine(xprev, xprev, x, y));
+                xprev = x;
+                yprev = y;
+            }
+
+            // Join all samples together
+            return lines.Aggregate((arr1, arr2) => arr1.Concat(arr2).ToArray());
+        }
+
         public void InstanceMain(string[] args)
         {
-            Init();
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i])
@@ -148,7 +245,8 @@ namespace Kronosta.SS2Renderer
                             string[] paramsArray = paramz.Split(",");
                             chunksX = int.Parse(paramsArray[0]);
                             chunksY = int.Parse(paramsArray[1]);
-                            chunkLen = int.Parse(paramsArray[2]);
+                            chunkLen = double.Parse(paramsArray[2]);
+                            Init();
                             break;
                         }
                     case "line":
@@ -161,8 +259,41 @@ namespace Kronosta.SS2Renderer
                             double starty = double.Parse(lineData[1]);
                             double endx = double.Parse(lineData[2]);
                             double endy = double.Parse(lineData[3]);
+                            Init();
                             ReadWav(filePath);
                             short[] result = CreateLine(startx, starty, endx, endy);
+                            WriteWav(outPath, result);
+                            break;
+                        }
+                    case "experience":
+                        {
+                            string filePath = args[++i];
+                            string outPath = args[++i];
+                            Init();
+                            ReadWav(filePath);
+                            short[] result = CreateExperience();
+                            WriteWav(outPath, result);
+                            break;
+                        }
+                    case "vertical":
+                        {
+                            string filePath = args[++i];
+                            string outPath = args[++i];
+                            Init();
+                            ReadWav(filePath);
+                            short[] result = CreateVertical();
+                            WriteWav(outPath, result);
+                            break;
+                        }
+                    case "random":
+                        {
+                            string filePath = args[++i];
+                            int iterations = int.Parse(args[++i]);
+                            if (iterations <= 0) ExitError("There must be at least 1 iteration.");
+                            string outPath = args[++i];
+                            Init();
+                            ReadWav(filePath);
+                            short[] result = CreateRandom(iterations);
                             WriteWav(outPath, result);
                             break;
                         }
