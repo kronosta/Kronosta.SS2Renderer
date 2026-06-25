@@ -1,6 +1,9 @@
 This is the renderer for my songs "SS^2" and "E2 goccaug E4 cw Arctakkurus" \[`Arctakkurus.wav`\], songs in two dimensions of time
 that have to be dynamically generated in order to be reasonably stored.
 
+Tessimal also has another planar audio renderer that's a bit more visually intuitive, using PNGs as a kind of MIDI-like format.
+[Check it out!](https://github.com/Z53-INCOMING/planar-audio)
+
 # How to use
 First go to the releases tab and download "SS^2_Package-1.0". It contains the program plus the raw audio chunk files
 for the two songs listed above, and a few sample commands.
